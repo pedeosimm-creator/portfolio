@@ -18,20 +18,6 @@ export function parseVideo(url) {
   return { tipo: 'link', url };
 }
 
-// Título do clipe direto do YouTube, na hora de publicar o site.
-// Sem internet, o site segue com "Clipe 01", "Clipe 02"...
-export async function youtubeTitle(url) {
-  try {
-    const r = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(url)}`, {
-      signal: AbortSignal.timeout(6000),
-    });
-    if (!r.ok) return null;
-    return (await r.json()).title || null;
-  } catch {
-    return null;
-  }
-}
-
 export const hostName = (url = '') =>
   url.includes('youtube') ? 'YouTube' : url.includes('photos.google') ? 'Google Fotos' : url.includes('instagram') ? 'Instagram' : 'Link';
 

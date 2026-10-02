@@ -1,38 +1,9 @@
 ---
+// A página sai pronta com o conteúdo de content/site.json; no navegador,
+// src/scripts/site.js troca pela versão mais nova salva pelo painel /admin.
 import site from '../../content/site.json';
-import { parseVideo, youtubeTitle, hostName, ICONES } from '../lib/media.js';
+import { paginaHTML } from '../lib/render.js';
 
-const pad = (n) => String(n).padStart(2, '0');
-const slugify = (s) =>
-  s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-
-const projetos = await Promise.all(
-  site.projetos.map(async (p, i) => {
-    const videos = await Promise.all(
-      (p.videos || []).map(async (url, k) => {
-        const v = parseVideo(url);
-        if (v.tipo === 'youtube') {
-          v.titulo = (await youtubeTitle(v.url)) || `Clipe ${pad(k + 1)}`;
-          v.thumb = `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
-        } else if (v.tipo === 'instagram') {
-          v.titulo = `${v.rotulo} ${pad(k + 1)}`;
-        } else {
-          v.titulo = `Link ${pad(k + 1)}`;
-        }
-        return v;
-      })
-    );
-    const horizontal = videos.length > 0 && videos.every((v) => v.tipo === 'youtube');
-    const contagem = videos.length
-      ? `${pad(videos.length)} ${horizontal ? 'clipes' : 'vídeos'} · ${hostName(videos[0].url)}`
-      : p.perfil ? hostName(p.perfil.url) : '';
-    return { ...p, slug: slugify(p.titulo), num: pad(i + 1), videos, horizontal, contagem };
-  })
-);
-
-const totalKit = site.kit.reduce((n, c) => n + c.itens.length, 0);
-const zap = `https://wa.me/${site.contato.whatsapp}`;
-const insta = `https://www.instagram.com/${site.contato.instagram}/`;
 const titulo = `${site.nome} · Roteiro, filme e foto`;
 ---
 <!doctype html>
@@ -65,133 +36,18 @@ const titulo = `${site.nome} · Roteiro, filme e foto`;
   </svg>
 
   <header class="top wrap mono">
-    <span>{site.nome}<br /><span class="dim">Roteiro / Filme / Foto</span></span>
+    <span>Pedro Simm<br /><span class="dim">Roteiro / Filme / Foto</span></span>
     <nav class="mid" aria-label="Principal">
       <a href="#projetos">Projetos</a><a href="#outros">Outros</a><a href="#kit">Kit</a><a href="#contato">Contato</a>
     </nav>
-    <a class="end" href={zap} target="_blank" rel="noopener">WhatsApp <span class="acc">■</span></a>
+    <a class="end" href="#contato">Contato <span class="acc">■</span></a>
   </header>
 
-  <main>
-    <section class="hero wrap">
-      <div class="name-wrap">
-        <span class="made mono">Portfólio · <b>{new Date().getFullYear()}</b></span>
-        <h1 class="name spray">
-          <span>{site.nome.split(' ')[0]}</span>
-          <span>{site.nome.split(' ').slice(1).join(' ')}<i class="drip" style="--x:6%;--h:.62em"></i><i class="drip" style="--x:27%;--h:.34em"></i><i class="drip" style="--x:52%;--h:.8em"></i><i class="drip" style="--x:71%;--h:.22em"></i><i class="drip" style="--x:90%;--h:.5em"></i></span>
-        </h1>
-        <span class="port hand">{site.chamada}</span>
-      </div>
-      <div class="hero-side">
-        <div class="intro">
-          <h2>↘ Introdução</h2>
-          <p>{site.intro}</p>
-          <span class="mono">Roteiro · Direção · Filmmaker · Fotografia</span>
-        </div>
-        <div class="hero-row">
-          <div class="rating" aria-label="Classificação: livre"><b>L</b><span class="mono">Livre<br />pra todo<br />mundo</span></div>
-          <div class="quick mono">
-            {projetos.slice(0, 3).map((p) => <a href={`#p-${p.slug}`} data-open={p.slug}>{p.titulo} <span>{p.num} ↓</span></a>)}
-            <a href="#kit">Kit de set <span>↓</span></a>
-          </div>
-        </div>
-      </div>
-    </section>
+  <main set:html={paginaHTML(site)} />
 
-    <section class="wrap sec" id="projetos">
-      <div class="sec-head"><h2>Projetos selecionados</h2><span class="hand">clica pra abrir ↓</span></div>
-      <div class="rows">
-        {projetos.map((p) => (
-          <article class="proj" id={`p-${p.slug}`}>
-            <button class:list={['row', { main: p.principal, bare: !p.videos.some((v) => v.thumb) }]} data-toggle={p.slug} aria-expanded="false" aria-controls={`panel-${p.slug}`}>
-              <span class="num">{p.num}</span>
-              {p.videos.some((v) => v.thumb) && (
-                <span class="thumbs">{p.videos.filter((v) => v.thumb).slice(0, 3).map((v) => <img src={v.thumb} alt="" loading="lazy" />)}</span>
-              )}
-              <span class="ttl"><b>{p.titulo}</b><span class="mono">{p.papel} · {p.formato}<br />{p.contagem}</span></span>
-              <span class="arr" aria-hidden="true">+</span>
-            </button>
-            <div class="panel" id={`panel-${p.slug}`} hidden>
-              <div class="p-info">
-                <dl class="s-meta mono">
-                  <div><dt>Papel</dt><dd>{p.papel}</dd></div>
-                  <div><dt>Cliente</dt><dd>{p.cliente}</dd></div>
-                  <div><dt>Formato</dt><dd>{p.formato}</dd></div>
-                  {p.ano && <div><dt>Ano</dt><dd>{p.ano}</dd></div>}
-                </dl>
-                <p class="s-text">{p.texto}</p>
-                {p.perfil && <a class="btn mono" href={p.perfil.url} target="_blank" rel="noopener">{p.perfil.texto} ↗</a>}
-              </div>
-              {p.videos.length > 0 ? (
-                <div class:list={['stage', { v: !p.horizontal }]}>
-                  <div class="feat" data-feat></div>
-                  <div class="rail" role="group" aria-label="Escolher vídeo">
-                    {p.videos.map((v, k) => (
-                      <button data-pick data-tipo={v.tipo} data-id={v.id} data-url={v.url} data-titulo={v.titulo} aria-pressed={k === 0 ? 'true' : 'false'}>
-                        {v.thumb ? <img src={v.thumb} alt="" loading="lazy" /> : <span class="tile-num">{pad(k + 1)}</span>}
-                        <span class="mono">{v.titulo}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div class="stage">
-                  {(p.fotos || []).length > 0 ? (
-                    <div class="photos">{p.fotos.map((f) => <img src={f} alt="" loading="lazy" />)}</div>
-                  ) : (
-                    p.perfil && (
-                      <a class="album" href={p.perfil.url} target="_blank" rel="noopener">
-                        <span class="mono">Série completa</span><b>Abrir o álbum ↗</b><span class="mono">{hostName(p.perfil.url)}</span>
-                      </a>
-                    )
-                  )}
-                </div>
-              )}
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-
-    <section class="wrap sec" id="outros">
-      <div class="sec-head"><h2>Outros trabalhos</h2><span class="hand">o que mais eu faço</span></div>
-      <ul class="services">
-        {site.servicos.map((s) => <li><span class="w">{s}</span><span class="st" aria-hidden="true">✱</span></li>)}
-      </ul>
-    </section>
-
-    <section class="paper sec" id="kit">
-      <div class="wrap">
-        <div class="kit-head">
-          <h2 class="kit-title spray">Kit<span class="hand">mixed media: o que vai pro set</span></h2>
-          <div class="rider mono"><b>Rider técnico</b><span>{totalKit} itens · {site.kit.length} categorias</span></div>
-        </div>
-        <div class="gear">
-          {site.kit.map((c, i) => (
-            <div class="cat">
-              <div class="cat-head mono"><span>{pad(i + 1)}</span><span>{c.categoria}</span></div>
-              {c.itens.map((it) => (
-                <div class="item">
-                  <svg viewBox="0 0 56 56" aria-hidden="true" set:html={ICONES[it.icone] || ICONES.camera}></svg>
-                  <div><b>{it.nome}{it.qtd && <span class="qty">×{it.qtd}</span>}</b><span class="mono">{it.descricao}</span></div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    <section class="wrap sec" id="contato">
-      <h2 class="cta spray">Bora criar<br /><span class="acc">algo real.</span></h2>
-      <div class="channels">
-        <a class="ch" href={zap} target="_blank" rel="noopener"><span class="mono">01</span><b>WhatsApp</b><span class="val mono">{site.contato.whatsappTexto}</span><span class="arr" aria-hidden="true">↗</span></a>
-        <a class="ch" href={insta} target="_blank" rel="noopener"><span class="mono">02</span><b>Instagram</b><span class="val mono">@{site.contato.instagram}</span><span class="arr" aria-hidden="true">↗</span></a>
-      </div>
-      <footer class="mono"><span>{site.nome}</span><span>Roteiro. Filme. Foto.</span><span>Valeu por rolar até aqui</span></footer>
-    </section>
-  </main>
-
-  <script src="/app.js" defer></script>
+  <script id="conteudo-inicial" type="application/json" set:html={JSON.stringify(site)} />
+  <script>
+    import '../scripts/site.js';
+  </script>
 </body>
 </html>

@@ -1,4 +1,5 @@
-// Painel de edição: carrega content/site.json pela função /api/admin, edita por formulário e salva de volta.
+// Painel de edição: lê o conteúdo da Supabase, edita por formulário e salva pela função portfolio-admin (com senha).
+import { buscarConteudo, PAINEL_URL, SUPABASE_KEY } from '../lib/config.js';
 
 const ICONES = ['camera', 'action', 'zoom', 'fish', 'shotgun', 'lav', 'tube', 'torch', 'panel', 'lantern', 'tripod', 'arm', 'gimbal', 'battery', 'charger'];
 const NOVO = {
@@ -12,7 +13,7 @@ const NOVO = {
 const $ = (s) => document.querySelector(s);
 const editor = $('#editor');
 const statusEl = $('#status');
-const st = { senha: '', data: null, sha: null, dirty: false, open: new Set(['projetos.0']) };
+const st = { senha: '', data: null, dirty: false, open: new Set(['projetos.0']) };
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const pad = (n) => String(n).padStart(2, '0');
@@ -231,9 +232,9 @@ editor.addEventListener('click', (e) => {
 
 /* ---------- servidor ---------- */
 async function api(acao, extra = {}) {
-  const r = await fetch('/api/admin', {
+  const r = await fetch(PAINEL_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY },
     body: JSON.stringify({ acao, senha: st.senha, ...extra }),
   });
   let data = {};
@@ -266,12 +267,11 @@ $('#salvar').addEventListener('click', async () => {
       const k = p.videos.findIndex((v) => plataforma(v)[1] !== 'ok');
       if (k >= 0) throw new Error(`O vídeo ${pad(k + 1)} de "${p.titulo}" não é link do YouTube nem do Instagram.`);
     }
-    const r = await api('salvar', { conteudo, sha: st.sha });
-    st.sha = r.sha;
-    st.data = conteudo;
+    const r = await api('salvar', { conteudo });
+    st.data = r.conteudo;
     st.dirty = false;
     render();
-    statusEl.textContent = 'Salvo. O site atualiza em cerca de 1 minuto.';
+    statusEl.textContent = 'Salvo. Já está no site.';
     statusEl.className = 'status mono good';
   } catch (err) {
     statusEl.textContent = err.message;
@@ -290,9 +290,8 @@ async function entrar(senha, silencioso) {
   const msg = $('#login-msg');
   msg.textContent = silencioso ? '' : 'Entrando…';
   try {
-    const r = await api('carregar');
-    st.data = r.conteudo;
-    st.sha = r.sha;
+    await api('entrar');
+    st.data = await buscarConteudo();
     try { sessionStorage.setItem('ps-admin', senha); } catch {}
     $('#login').hidden = true;
     $('#app').hidden = false;

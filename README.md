@@ -1,10 +1,8 @@
 # Portfólio Pedro Simm
 
-Roteiro, filme e foto. Site estático feito com [Astro](https://astro.build), publicado no Netlify.
+Roteiro, filme e foto. Site estático feito com [Astro](https://astro.build).
 
 ## Como atualizar
-
-### Pelo painel (o jeito fácil)
 
 Entra em **`/admin`** no endereço do site, digita a senha e edita por formulário:
 
@@ -13,34 +11,28 @@ Entra em **`/admin`** no endereço do site, digita a senha e edita por formulár
 - **Trocar um vídeo:** apaga o link e cola o novo.
 - **Ordem:** as setas ↑ ↓ mudam a ordem dos vídeos e dos projetos no site.
 
-Clicou em **Salvar**, o site atualiza sozinho em cerca de 1 minuto.
+Clicou em **Salvar**, a mudança já aparece no site. Não precisa publicar de novo.
 
-### Configurar o painel (uma vez só)
+## Como funciona
 
-O painel precisa de duas variáveis no Netlify (*Project configuration → Environment variables*):
+- O conteúdo fica na Supabase (projeto **flowspace**, tabela `pf_site`). O site lê de lá toda vez que alguém abre a página.
+- Quem salva é a função `portfolio-admin` (`supabase/functions/portfolio-admin`), que confere a senha antes. A senha não fica no código, só a impressão digital dela (SHA-256).
+- `content/site.json` é a versão que vai junto com o site publicado. Ela aparece primeiro e é trocada pela versão da Supabase assim que carrega.
+- Títulos dos clipes do YouTube: a função busca sozinha quando salvas pelo painel.
 
-| Variável | O que é |
-|---|---|
-| `ADMIN_SENHA` | A senha do painel. |
-| `GITHUB_TOKEN` | Chave do GitHub que deixa o painel salvar neste repositório. |
+## Publicar uma versão nova do código
 
-Para criar a chave: GitHub → *Settings → Developer settings → Fine-grained tokens → Generate new token*. Em *Repository access*, escolhe só **portfolio**. Em *Permissions*, coloca **Contents: Read and write**. Copia a chave e cola na variável `GITHUB_TOKEN`. Depois faz um novo deploy (*Deploys → Trigger deploy*).
+Só precisa quando o código muda (visual, seções novas). Mudança de conteúdo não precisa.
 
-A senha e a chave ficam só no Netlify. Elas nunca vão para o código.
+```bash
+npm install
+npm run build    # gera a pasta dist/
+```
 
-### Direto no arquivo
-
-Tudo que aparece no site está em **`content/site.json`**: textos, projetos, vídeos, outros trabalhos, kit e contato. O painel edita esse mesmo arquivo.
-
-- **Vídeo novo:** cola o link do YouTube ou do Instagram na lista `videos` do projeto. O site descobre sozinho de onde é.
-  - YouTube: capa, título e player saem automáticos.
-  - Instagram: entra com o embed oficial do Instagram.
-- **Foto nova:** joga o arquivo em `public/fotos/` e coloca `/fotos/nome-do-arquivo.jpg` na lista `fotos` do projeto.
+Arrasta a pasta `dist/` na página de deploys do projeto no Netlify.
 
 ## Rodar no computador
 
 ```bash
-npm install
 npm run dev      # http://localhost:4321
-npm run build    # gera a pasta dist/
 ```

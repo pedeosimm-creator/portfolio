@@ -72,7 +72,7 @@ function projeto(p, i, n) {
   const path = `projetos.${i}`;
   const vids = p.videos || [];
   return `<details class="proj" data-key="${path}"${st.open.has(path) ? ' open' : ''}>
-    <summary><span class="pnum">${pad(i + 1)}</span><b>${esc(p.titulo || 'Sem título')}</b>${p.principal ? '<span class="tag ok">principal</span>' : ''}<span class="mono dim">${vids.length} vídeo${vids.length === 1 ? '' : 's'}</span></summary>
+    <summary><span class="pnum">${pad(i + 1)}</span><b>${esc(p.titulo || 'Sem título')}</b>${p.principal ? '<span class="tag ok">abre primeiro</span>' : ''}<span class="mono dim">${vids.length} vídeo${vids.length === 1 ? '' : 's'} · ${(p.fotos || []).length} foto${(p.fotos || []).length === 1 ? '' : 's'}</span></summary>
     <div class="pbody">
       <div class="grid">
         ${field('Título', `${path}.titulo`)}
@@ -88,6 +88,10 @@ function projeto(p, i, n) {
       <h3 class="mono">Vídeos <span class="dim">· a ordem aqui é a ordem no site</span></h3>
       <div class="videos">${vids.map((_, vi) => videoRow(i, vi, vids.length)).join('') || '<p class="dim mono">Nenhum vídeo ainda.</p>'}</div>
       <button type="button" class="add mono" data-act="add" data-path="${path}.videos" data-novo="video">+ Adicionar vídeo</button>
+      <small class="dim">Reels: o jeito mais garantido é subir no YouTube como Shorts e colar o link aqui.</small>
+      <h3 class="mono">Fotos <span class="dim">· aparecem em grade, clicando abre em tela cheia</span></h3>
+      <div class="fotos">${(p.fotos || []).map((f, fi, arr) => `<div class="ft"><img src="${esc(f)}" alt="Foto ${fi + 1}" loading="lazy"><span class="ft-acts">${moveBtns(`${path}.fotos.${fi}`, fi, arr.length)}<button type="button" class="icon" data-act="del" data-path="${path}.fotos.${fi}" aria-label="Tirar foto ${fi + 1}">✕</button></span></div>`).join('') || '<p class="dim mono">Nenhuma foto ainda.</p>'}</div>
+      <label class="add mono up">+ Subir fotos<input type="file" accept="image/jpeg,image/png,image/webp" multiple data-upload="${i}"></label>
       <div class="pfoot">${moveBtns(path, i, n)}${delBtn(path, 'Remover projeto')}</div>
     </div>
   </details>`;
@@ -158,9 +162,48 @@ function marcar(msg) {
   statusEl.className = 'status mono warn';
 }
 
+/* ---------- fotos ---------- */
+// Diminui a foto no próprio navegador antes de subir (lado maior até 2200 px, JPG).
+async function prepararFoto(file) {
+  const img = await createImageBitmap(file);
+  const escala = Math.min(1, 2200 / Math.max(img.width, img.height));
+  const canvas = Object.assign(document.createElement('canvas'), { width: Math.round(img.width * escala), height: Math.round(img.height * escala) });
+  canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.86));
+  const dataUrl = await new Promise((r) => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
+  return dataUrl.split(',')[1];
+}
+
+editor.addEventListener('change', async (e) => {
+  const input = e.target.closest('[data-upload]');
+  if (!input || !input.files.length) return;
+  const pi = Number(input.dataset.upload);
+  const arquivos = [...input.files];
+  const projeto = st.data.projetos[pi];
+  projeto.fotos ||= [];
+  $('#salvar').disabled = true;
+  try {
+    for (const [k, file] of arquivos.entries()) {
+      statusEl.textContent = `Subindo foto ${k + 1} de ${arquivos.length}…`;
+      statusEl.className = 'status mono';
+      const r = await api('foto', { tipo: 'image/jpeg', base64: await prepararFoto(file) });
+      projeto.fotos.push(r.url);
+    }
+    st.open.add(`projetos.${pi}`);
+    render();
+    marcar('Fotos no ar. Clica em Salvar pra aparecerem no site.');
+  } catch (err) {
+    render();
+    statusEl.textContent = err.message;
+    statusEl.className = 'status mono bad';
+  } finally {
+    $('#salvar').disabled = false;
+  }
+});
+
 editor.addEventListener('input', (e) => {
   const el = e.target.closest('[data-path]');
-  if (!el || el.dataset.act) return;
+  if (!el || el.dataset.act || el.dataset.upload !== undefined) return;
   const path = el.dataset.path;
   let v = el.value;
   if ('num' in el.dataset) v = v === '' ? undefined : Number(v);

@@ -21,7 +21,7 @@ export function preparar(c) {
       else v.titulo = `Link ${pad(k + 1)}`;
       return v;
     });
-    const horizontal = videos.length > 0 && videos.every((v) => v.tipo === 'youtube');
+    const horizontal = videos.length > 0 && videos.every((v) => v.tipo === 'youtube' && !v.vertical);
     const contagem = videos.length
       ? `${pad(videos.length)} ${horizontal ? 'clipes' : 'vídeos'} · ${hostName(videos[0].url)}`
       : p.perfil?.url ? hostName(p.perfil.url) : '';
@@ -57,20 +57,26 @@ function hero(c, projetos) {
 }
 
 function projeto(p) {
+  const fotos = (p.fotos || []).filter(Boolean);
   const comThumb = p.videos.filter((v) => v.thumb);
   const meta = [['Papel', p.papel], ['Cliente', p.cliente], ['Formato', p.formato], ['Ano', p.ano]].filter(([, v]) => v);
+  const fotosHTML = (extra) =>
+    `<div class="photos${extra}">${fotos.map((f, k) => `<button data-foto="${k}" aria-label="Ampliar foto ${k + 1}"><img src="${esc(f)}" alt="" loading="lazy"></button>`).join('')}</div>`;
+  const lista = p.videos.length > 0 && !p.videos.some((v) => v.thumb);
   const stage = p.videos.length
     ? `<div class="stage${p.horizontal ? '' : ' v'}">
         <div class="feat" data-feat></div>
-        <div class="rail" role="group" aria-label="Escolher vídeo">
-          ${p.videos.map((v, k) => `<button data-pick data-tipo="${v.tipo}" data-id="${esc(v.id || '')}" data-url="${esc(v.url)}" data-titulo="${esc(v.titulo)}" aria-pressed="${k === 0}">
-            ${v.thumb ? `<img src="${v.thumb}" alt="" loading="lazy">` : `<span class="tile-num">${pad(k + 1)}</span>`}
-            <span class="mono">${esc(v.titulo)}</span></button>`).join('')}
+        <div class="rail${lista ? ' list' : ''}" role="group" aria-label="Escolher vídeo">
+          ${p.videos.map((v, k) => `<button data-pick data-tipo="${v.tipo}" data-id="${esc(v.id || '')}" data-url="${esc(v.url)}" data-titulo="${esc(v.titulo)}" data-vertical="${v.vertical || v.tipo === 'instagram' ? '1' : ''}" aria-pressed="${k === 0}">${
+            lista
+              ? `<span class="n">${pad(k + 1)}</span><b>${esc(v.titulo)}</b><span class="mono">${hostName(v.url)} ▸</span>`
+              : `${v.thumb ? `<img src="${v.thumb}" alt="" loading="lazy">` : ''}<span class="mono">${esc(v.titulo)}</span>`
+          }</button>`).join('')}
         </div>
-      </div>`
+      </div>${fotos.length ? fotosHTML(' full') : ''}`
     : `<div class="stage">${
-        (p.fotos || []).length
-          ? `<div class="photos">${p.fotos.map((f) => `<img src="${esc(f)}" alt="" loading="lazy">`).join('')}</div>`
+        fotos.length
+          ? fotosHTML('')
           : p.perfil?.url
             ? `<a class="album" ${ext(p.perfil.url)}><span class="mono">Série completa</span><b>Abrir o álbum ↗</b><span class="mono">${hostName(p.perfil.url)}</span></a>`
             : ''
@@ -79,7 +85,7 @@ function projeto(p) {
     <button class="row${p.principal ? ' main' : ''}${comThumb.length ? '' : ' bare'}" data-toggle="${p.slug}" aria-expanded="false" aria-controls="panel-${p.slug}">
       <span class="num">${p.num}</span>
       ${comThumb.length ? `<span class="thumbs">${comThumb.slice(0, 3).map((v) => `<img src="${v.thumb}" alt="" loading="lazy">`).join('')}</span>` : ''}
-      <span class="ttl"><b>${esc(p.titulo)}</b><span class="mono">${[p.papel, p.formato].filter(Boolean).map(esc).join(' · ')}<br>${esc(p.contagem)}</span></span>
+      <span class="ttl"><b>${esc(p.titulo)}</b><span class="mono">${[p.papel, p.formato].filter(Boolean).map(esc).join(' · ')}<br>${esc(fotos.length && !p.videos.length ? `${pad(fotos.length)} fotos` : p.contagem)}</span></span>
       <span class="arr" aria-hidden="true">+</span>
     </button>
     <div class="panel" id="panel-${p.slug}" hidden>

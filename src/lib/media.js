@@ -2,7 +2,10 @@
 
 export function parseVideo(url) {
   const yt = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/);
-  if (yt) return { tipo: 'youtube', id: yt[1], url: `https://www.youtube.com/watch?v=${yt[1]}` };
+  if (yt) {
+    const vertical = /youtube\.com\/shorts\//.test(url);
+    return { tipo: 'youtube', id: yt[1], vertical, url: vertical ? `https://www.youtube.com/shorts/${yt[1]}` : `https://www.youtube.com/watch?v=${yt[1]}` };
+  }
 
   const ig = url.match(/instagram\.com\/(?:[\w.]+\/)?(reel|reels|p|tv)\/([\w-]+)/);
   if (ig) {

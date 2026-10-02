@@ -6,35 +6,20 @@ import { buscarConteudo } from '../lib/config.js';
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const host = (url) => (url.includes('youtube') ? 'YouTube' : url.includes('instagram') ? 'Instagram' : 'link');
 
-// O script do Instagram só carrega quando alguém abre um projeto com post do Insta.
-let igLoader;
-function loadInstagram() {
-  if (window.instgrm) return Promise.resolve();
-  igLoader ||= new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = 'https://www.instagram.com/embed.js';
-    s.async = true;
-    s.onload = resolve;
-    s.onerror = reject;
-    document.body.appendChild(s);
-  });
-  return igLoader;
-}
-
 function feature(stage, btn) {
-  const { tipo, id, url, titulo } = btn.dataset;
+  const { tipo, id, url, titulo, vertical } = btn.dataset;
   const feat = stage.querySelector('[data-feat]');
   stage.querySelectorAll('[data-pick]').forEach((b) => b.setAttribute('aria-pressed', b === btn));
   const bar = `<div class="bar"><b>${esc(titulo)}</b><a class="mono" href="${esc(url)}" target="_blank" rel="noopener">Abrir no ${host(url)} ↗</a></div>`;
 
   if (tipo === 'youtube') {
-    feat.innerHTML = `<div class="yt"><img src="https://i.ytimg.com/vi/${esc(id)}/hqdefault.jpg" alt=""><button class="pl" aria-label="Tocar ${esc(titulo)}"><span>▶</span></button></div>${bar}`;
+    feat.innerHTML = `<div class="yt${vertical ? ' v' : ''}"><img src="https://i.ytimg.com/vi/${esc(id)}/hqdefault.jpg" alt=""><button class="pl" aria-label="Tocar ${esc(titulo)}"><span>▶</span></button></div>${bar}`;
     feat.querySelector('.pl').addEventListener('click', () => {
       feat.querySelector('.yt').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${esc(id)}?autoplay=1&rel=0" title="${esc(titulo)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
     });
   } else if (tipo === 'instagram') {
-    feat.innerHTML = `<div class="ig"><blockquote class="instagram-media" data-instgrm-permalink="${esc(url)}?utm_source=ig_embed" data-instgrm-version="14"><a class="ig-wait mono" href="${esc(url)}" target="_blank" rel="noopener">Carregando o vídeo do Instagram…</a></blockquote></div>${bar}`;
-    loadInstagram().then(() => window.instgrm && window.instgrm.Embeds.process()).catch(() => {});
+    // Player oficial do Instagram direto em iframe (o mesmo do botão "incorporar" deles).
+    feat.innerHTML = `<div class="ig"><iframe src="${esc(url)}embed/" title="${esc(titulo)}" loading="lazy" allowtransparency="true" allow="encrypted-media; picture-in-picture; fullscreen" scrolling="no"></iframe></div>${bar}`;
   } else {
     feat.innerHTML = bar;
   }
@@ -58,7 +43,46 @@ function toggle(slug, force, scroll) {
   if (scroll && alvo) alvo.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
 }
 
+// Fotos em tela cheia, com setas e teclado.
+let galeria = null;
+function mostrarFoto(lista, k) {
+  galeria ||= Object.assign(document.createElement('div'), { className: 'lightbox', hidden: true });
+  if (!galeria.isConnected) {
+    galeria.setAttribute('role', 'dialog');
+    galeria.setAttribute('aria-label', 'Foto ampliada');
+    galeria.innerHTML = `<button class="ant" aria-label="Foto anterior">←</button><img alt=""><button class="prox" aria-label="Próxima foto">→</button><button class="x mono" aria-label="Fechar">✕</button>`;
+    document.body.appendChild(galeria);
+    galeria.addEventListener('click', (e) => {
+      if (e.target.closest('.ant')) passo(-1);
+      else if (e.target.closest('.prox')) passo(1);
+      else if (e.target.closest('.x') || e.target === galeria) fechar();
+    });
+  }
+  galeria._lista = lista;
+  galeria._k = (k + lista.length) % lista.length;
+  galeria.querySelector('img').src = lista[galeria._k];
+  galeria.hidden = false;
+  document.body.style.overflow = 'hidden';
+  galeria.querySelector('.x').focus();
+}
+const passo = (d) => mostrarFoto(galeria._lista, galeria._k + d);
+function fechar() {
+  galeria.hidden = true;
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', (e) => {
+  if (!galeria || galeria.hidden) return;
+  if (e.key === 'Escape') fechar();
+  if (e.key === 'ArrowRight') passo(1);
+  if (e.key === 'ArrowLeft') passo(-1);
+});
+
 document.addEventListener('click', (e) => {
+  const foto = e.target.closest('[data-foto]');
+  if (foto) {
+    const lista = [...foto.parentElement.querySelectorAll('img')].map((i) => i.src);
+    return mostrarFoto(lista, Number(foto.dataset.foto));
+  }
   const t = e.target.closest('[data-toggle]');
   if (t) return toggle(t.dataset.toggle);
   const pick = e.target.closest('[data-pick]');

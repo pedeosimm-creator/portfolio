@@ -116,6 +116,11 @@
           "icone": "action",
           "nome": "GoPro Hero 12",
           "descricao": "Com acessórios"
+        },
+        {
+          "icone": "camera",
+          "nome": "Sony Handycam SR47",
+          "descricao": "Câmera de mão"
         }
       ]
     },

@@ -1,5 +1,5 @@
 // Painel /admin do portfólio: confere a senha e salva o conteúdo na tabela pf_site.
-// Ao salvar, busca no YouTube o título de cada clipe novo.
+// Ao salvar, busca no YouTube o título de cada clipe novo. Também sobe as fotos (bucket portfolio).
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 // Impressão digital (SHA-256) da senha do painel. A senha em si não fica no código.
@@ -80,11 +80,24 @@ Deno.serve(async (req) => {
 
   if (body.acao === 'entrar') return json({ ok: true });
 
+  const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+
+  if (body.acao === 'foto') {
+    const tipos: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+    const ext = tipos[body.tipo];
+    if (!ext || typeof body.base64 !== 'string') return json({ erro: 'Formato de foto não aceito. Usa JPG, PNG ou WEBP.' }, 400);
+    const bytes = Uint8Array.from(atob(body.base64), (c) => c.charCodeAt(0));
+    if (bytes.length > 8 * 1024 * 1024) return json({ erro: 'Foto grande demais (máximo 8 MB).' }, 400);
+    const caminho = `fotos/${crypto.randomUUID()}.${ext}`;
+    const { error } = await sb.storage.from('portfolio').upload(caminho, bytes, { contentType: body.tipo, cacheControl: '31536000' });
+    if (error) return json({ erro: 'Não consegui subir a foto. Tenta de novo.' }, 500);
+    return json({ ok: true, url: sb.storage.from('portfolio').getPublicUrl(caminho).data.publicUrl });
+  }
+
   if (body.acao === 'salvar') {
     const problema = validar(body.conteudo);
     if (problema) return json({ erro: problema }, 400);
     const conteudo = { ...body.conteudo, titulos: await titulos(body.conteudo) };
-    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
     const { error } = await sb.from('pf_site').upsert({ id: 'principal', conteudo, atualizado_em: new Date().toISOString() });
     if (error) return json({ erro: 'Não consegui salvar. Tenta de novo em instantes.' }, 500);
     return json({ ok: true, conteudo });

@@ -163,13 +163,13 @@ function marcar(msg) {
 }
 
 /* ---------- fotos ---------- */
-// Diminui a foto no próprio navegador antes de subir (lado maior até 2200 px, JPG).
+// Diminui a foto no próprio navegador antes de subir (lado maior até 1600 px, JPG ~200 KB).
 async function prepararFoto(file) {
   const img = await createImageBitmap(file);
-  const escala = Math.min(1, 2200 / Math.max(img.width, img.height));
+  const escala = Math.min(1, 1600 / Math.max(img.width, img.height));
   const canvas = Object.assign(document.createElement('canvas'), { width: Math.round(img.width * escala), height: Math.round(img.height * escala) });
   canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-  const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.86));
+  const blob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.82));
   const dataUrl = await new Promise((r) => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(blob); });
   return dataUrl.split(',')[1];
 }

@@ -1,0 +1,64 @@
+# Painel de edição (Pages CMS: https://pagescms.org)
+# Entra com o GitHub, escolhe este repositório e edita tudo por formulário.
+media:
+  input: public/fotos
+  output: /fotos
+
+content:
+  - name: site
+    label: Conteúdo do site
+    type: file
+    path: content/site.json
+    format: json
+    fields:
+      - { name: nome, label: Nome, type: string }
+      - { name: chamada, label: Frase manuscrita da abertura, type: string }
+      - { name: intro, label: Introdução, type: text }
+      - { name: cor, label: Cor de destaque (hex), type: string }
+      - name: contato
+        label: Contato
+        type: object
+        fields:
+          - { name: whatsapp, label: WhatsApp (só números, com 55), type: string }
+          - { name: whatsappTexto, label: WhatsApp como aparece no site, type: string }
+          - { name: instagram, label: Instagram (sem @), type: string }
+      - name: projetos
+        label: Projetos
+        type: object
+        list: true
+        fields:
+          - { name: titulo, label: Título, type: string }
+          - { name: principal, label: Projeto principal, type: boolean }
+          - { name: papel, label: Papel, type: string }
+          - { name: cliente, label: Cliente, type: string }
+          - { name: formato, label: Formato, type: string }
+          - { name: ano, label: Ano, type: string }
+          - { name: texto, label: Texto, type: text }
+          - name: perfil
+            label: Link do perfil ou álbum
+            type: object
+            fields:
+              - { name: texto, label: Texto do botão, type: string }
+              - { name: url, label: Link, type: string }
+          - { name: videos, label: Vídeos (cola o link do YouTube ou Instagram), type: string, list: true }
+          - { name: fotos, label: Fotos, type: image, list: true }
+      - { name: servicos, label: Outros trabalhos, type: string, list: true }
+      - name: kit
+        label: Kit
+        type: object
+        list: true
+        fields:
+          - { name: categoria, label: Categoria, type: string }
+          - name: itens
+            label: Itens
+            type: object
+            list: true
+            fields:
+              - { name: nome, label: Nome, type: string }
+              - { name: descricao, label: Descrição, type: string }
+              - name: icone
+                label: Desenho
+                type: select
+                options:
+                  values: [camera, action, zoom, fish, shotgun, lav, tube, torch, panel, lantern, tripod, arm, gimbal, battery, charger]
+              - { name: qtd, label: Quantidade, type: number }

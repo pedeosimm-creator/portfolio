@@ -1,0 +1,123 @@
+{
+  "nome": "Pedro Simm",
+  "chamada": "roteiro, filme e foto",
+  "intro": "Escrevo, filmo e fotografo. Coordeno a criação da Concept e dirijo os clipes do coletivo ADOBRA. Do submundo pra todo mundo.",
+  "cor": "#e3261c",
+  "contato": {
+    "whatsapp": "5547992504820",
+    "whatsappTexto": "+55 47 99250-4820",
+    "instagram": "pedrosimm"
+  },
+  "projetos": [
+    {
+      "titulo": "Concept",
+      "principal": true,
+      "papel": "Coordenação criativa",
+      "cliente": "Concept",
+      "formato": "Campanhas e conteúdo",
+      "ano": "",
+      "texto": "Coordenação criativa da Concept: da ideia e do roteiro ao set e à entrega.",
+      "perfil": { "texto": "@concept.qg no Instagram", "url": "https://www.instagram.com/concept.qg/" },
+      "videos": [
+        "https://www.instagram.com/reel/C9iQhwkvijt/",
+        "https://www.instagram.com/p/Dc4TtAfpB57/",
+        "https://www.instagram.com/p/DZoBElXtSQt/",
+        "https://www.instagram.com/reel/DbB3DrUvdAO/",
+        "https://www.instagram.com/reel/DIl7XObsKfF/",
+        "https://www.instagram.com/reel/DFagwVVuADW/"
+      ]
+    },
+    {
+      "titulo": "ADOBRA",
+      "papel": "Direção audiovisual",
+      "cliente": "Coletivo ADOBRA",
+      "formato": "Videoclipes",
+      "ano": "",
+      "texto": "Direção audiovisual dos clipes do coletivo ADOBRA.",
+      "perfil": { "texto": "Canal @ADOBRAA no YouTube", "url": "https://www.youtube.com/@ADOBRAA" },
+      "videos": [
+        "https://www.youtube.com/watch?v=HQrf-W66AI8",
+        "https://www.youtube.com/watch?v=tyjt3yoy-9Q",
+        "https://www.youtube.com/watch?v=X-_d2kI5BGg"
+      ]
+    },
+    {
+      "titulo": "Breno Branches",
+      "papel": "Reels",
+      "cliente": "Breno Branches",
+      "formato": "Vertical 9:16",
+      "ano": "",
+      "texto": "Reels para o Breno Branches.",
+      "perfil": { "texto": "@brenobranches no Instagram", "url": "https://www.instagram.com/brenobranches/" },
+      "videos": [
+        "https://www.instagram.com/brenobranches/reel/DcotAu8vB1j/",
+        "https://www.instagram.com/brenobranches/reel/DcPTo4PRwzh/",
+        "https://www.instagram.com/brenobranches/reel/DdrqKQ7PWcu/"
+      ]
+    },
+    {
+      "titulo": "Aftermovies",
+      "papel": "Aftermovies",
+      "cliente": "Eventos",
+      "formato": "Aftermovie vertical",
+      "ano": "",
+      "texto": "Aftermovies de eventos: a noite inteira em poucos minutos.",
+      "videos": [
+        "https://www.instagram.com/reel/Dd9xqdht13n/",
+        "https://www.instagram.com/reel/DdZUhelNPcS/",
+        "https://www.instagram.com/reel/Dd-HbeKCGwl/",
+        "https://www.instagram.com/reel/DQZdzaRDuFH/"
+      ]
+    },
+    {
+      "titulo": "Fotografia autoral",
+      "papel": "Fotografia",
+      "cliente": "Autoral",
+      "formato": "Série",
+      "ano": "",
+      "texto": "Fotografia autoral. O trabalho que não tem briefing.",
+      "perfil": { "texto": "Ver a série no Google Fotos", "url": "https://photos.google.com/share/AF1QipNLgkgySl2x_bv-Xql-j-cbHLyxGhVHxwtgXUNT_500R79BBhOLJ5QHv_QGzJIXEg?key=enpaTnlLT0dJZTM3QjBjR3pHQ0NxdDJRM0dfMktn" },
+      "videos": [],
+      "fotos": []
+    }
+  ],
+  "servicos": [
+    "Roteiro & copy",
+    "Edição de vídeo",
+    "Lives & podcasts",
+    "Direção criativa",
+    "Clipes & institucionais",
+    "Captação de vídeo",
+    "Fotografia",
+    "Tempo real"
+  ],
+  "kit": [
+    { "categoria": "Câmeras", "itens": [
+      { "icone": "camera", "nome": "Sony α6700", "descricao": "Corpo principal" },
+      { "icone": "action", "nome": "GoPro Hero 12", "descricao": "Com acessórios" }
+    ]},
+    { "categoria": "Lentes", "itens": [
+      { "icone": "zoom", "nome": "Tamron 17-70mm", "descricao": "Zoom do dia a dia" },
+      { "icone": "fish", "nome": "7Artisans 7.5mm", "descricao": "Fisheye" }
+    ]},
+    { "categoria": "Áudio", "itens": [
+      { "icone": "shotgun", "nome": "Rode VideoMic GO II", "descricao": "Microfone direcional" },
+      { "icone": "lav", "nome": "Hollyland Lark M2", "descricao": "Microfone de lapela" }
+    ]},
+    { "categoria": "Luz", "itens": [
+      { "icone": "tube", "nome": "Bastão Luxceo", "descricao": "Luz em tubo" },
+      { "icone": "torch", "nome": "Lanterna Ulanzi", "descricao": "Luz de mão" },
+      { "icone": "panel", "nome": "Neewer BS40C", "descricao": "Iluminação" },
+      { "icone": "lantern", "nome": "Ulanzi L024 40W RGB", "descricao": "Com balão chinês" }
+    ]},
+    { "categoria": "Movimento", "itens": [
+      { "icone": "gimbal", "nome": "DJI RS 4 Mini", "descricao": "Gimbal" },
+      { "icone": "tripod", "nome": "Tripé de cinema Neewer", "descricao": "Tripé" },
+      { "icone": "arm", "nome": "Magic arm Ulanzi", "descricao": "Braço articulado" }
+    ]},
+    { "categoria": "Energia", "itens": [
+      { "icone": "battery", "nome": "Baterias", "descricao": "Pra filmagem longa", "qtd": 3 },
+      { "icone": "charger", "nome": "Carregador 100W", "descricao": "Carga rápida no set" }
+    ]}
+  ]
+}

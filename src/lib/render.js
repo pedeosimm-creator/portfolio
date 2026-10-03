@@ -114,14 +114,14 @@ export function paginaHTML(c) {
   </section>
 
   <section class="wrap sec" id="outros">
-    <div class="sec-head"><h2>Outros trabalhos</h2><span class="hand">o que mais eu faço</span></div>
+    <div class="sec-head"><h2>O que mais faço</h2></div>
     <ul class="services">${(c.servicos || []).map((s) => `<li><span class="w">${esc(s)}</span><span class="st" aria-hidden="true">✱</span></li>`).join('')}</ul>
   </section>
 
   <section class="paper sec" id="kit">
     <div class="wrap">
       <div class="kit-head">
-        <h2 class="kit-title spray">Kit<span class="hand">mixed media: o que vai pro set</span></h2>
+        <h2 class="kit-title spray">Kit</h2>
         <div class="rider mono"><b>Rider técnico</b><span>${totalKit} itens · ${kit.length} categorias</span></div>
       </div>
       <div class="gear">${kit.map((k, i) => `<div class="cat">

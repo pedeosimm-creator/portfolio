@@ -68,10 +68,10 @@ function projeto(p) {
     ? `<div class="stage${p.horizontal ? '' : ' v'}">
         <div class="feat" data-feat></div>
         <div class="rail${lista ? ' list' : ''}" role="group" aria-label="Escolher vídeo">
-          ${p.videos.map((v, k) => `<button data-pick data-tipo="${v.tipo}" data-id="${esc(v.id || '')}" data-url="${esc(v.url)}" data-titulo="${esc(v.titulo)}" data-vertical="${v.vertical || v.tipo === 'instagram' ? '1' : ''}" aria-pressed="${k === 0}">${
+          ${p.videos.map((v, k) => `<button data-pick data-tipo="${v.tipo}" data-id="${esc(v.id || '')}" data-url="${esc(v.url)}" data-titulo="${esc(v.titulo)}" data-vertical="${v.vertical || v.tipo === 'instagram' ? '1' : ''}" aria-pressed="${k === 0}" aria-label="${esc(v.titulo)}">${
             lista
-              ? `<span class="n">${pad(k + 1)}</span><b>${esc(v.titulo)}</b><span class="mono">${hostName(v.url)} ▸</span>`
-              : `${v.thumb ? `<img src="${v.thumb}" alt="" loading="lazy">` : ''}<span class="mono">${esc(v.titulo)}</span>`
+              ? `<span class="n">${pad(k + 1)}</span><span class="mono">${hostName(v.url)} ▸</span>`
+              : `${v.thumb ? `<img src="${v.thumb}" alt="" loading="lazy">` : ''}`
           }</button>`).join('')}
         </div>
       </div>${fotos.length ? fotosHTML(' full') : ''}`

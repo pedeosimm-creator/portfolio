@@ -10,7 +10,7 @@ function feature(stage, btn) {
   const { tipo, id, url, titulo, vertical } = btn.dataset;
   const feat = stage.querySelector('[data-feat]');
   stage.querySelectorAll('[data-pick]').forEach((b) => b.setAttribute('aria-pressed', b === btn));
-  const bar = `<div class="bar"><b>${esc(titulo)}</b><a class="mono" href="${esc(url)}" target="_blank" rel="noopener">Abrir no ${host(url)} ↗</a></div>`;
+  const bar = `<div class="bar"><a class="mono" href="${esc(url)}" target="_blank" rel="noopener">Abrir no ${host(url)} ↗</a></div>`;
 
   if (tipo === 'youtube') {
     feat.innerHTML = `<div class="yt${vertical ? ' v' : ''}"><img src="https://i.ytimg.com/vi/${esc(id)}/hqdefault.jpg" alt=""><button class="pl" aria-label="Tocar ${esc(titulo)}"><span>▶</span></button></div>${bar}`;

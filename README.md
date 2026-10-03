@@ -18,7 +18,6 @@ Clicou em **Salvar**, a mudança já aparece no site. Não precisa publicar de n
 - O conteúdo fica na Supabase (projeto **flowspace**, tabela `pf_site`). O site lê de lá toda vez que alguém abre a página.
 - Quem salva é a função `portfolio-admin` (`supabase/functions/portfolio-admin`), que confere a senha antes. A senha não fica no código, só a impressão digital dela (SHA-256).
 - `content/site.json` é a versão que vai junto com o site publicado. Ela aparece primeiro e é trocada pela versão da Supabase assim que carrega.
-- Títulos dos clipes do YouTube: a função busca sozinha quando salvas pelo painel.
 
 ## Publicar uma versão nova do código
 

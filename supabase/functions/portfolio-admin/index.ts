@@ -1,5 +1,5 @@
 // Painel /admin do portfólio: confere a senha e salva o conteúdo na tabela pf_site.
-// Ao salvar, busca no YouTube o título de cada clipe novo. Também sobe as fotos (bucket portfolio).
+// Também sobe as fotos (bucket portfolio).
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 // Impressão digital (SHA-256) da senha do painel. A senha em si não fica no código.
@@ -41,27 +41,6 @@ function validar(c: any): string | null {
   return null;
 }
 
-const ytId = (url: string) =>
-  url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/)?.[1];
-
-// Guarda os títulos por ID do vídeo; só busca os que ainda não tem.
-async function titulos(c: any) {
-  const antigos = c.titulos && typeof c.titulos === 'object' ? c.titulos : {};
-  const ids = [...new Set(c.projetos.flatMap((p: any) => p.videos.map(ytId).filter(Boolean)))] as string[];
-  const novos: Record<string, string> = {};
-  await Promise.all(ids.map(async (id) => {
-    if (antigos[id]) return void (novos[id] = antigos[id]);
-    try {
-      const r = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(`https://www.youtube.com/watch?v=${id}`)}`, { signal: AbortSignal.timeout(5000) });
-      if (r.ok) {
-        const t = (await r.json()).title;
-        if (t) novos[id] = t;
-      }
-    } catch { /* sem título, o site mostra "Clipe 01" */ }
-  }));
-  return novos;
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json({ erro: 'Método não permitido.' }, 405);
@@ -97,7 +76,7 @@ Deno.serve(async (req) => {
   if (body.acao === 'salvar') {
     const problema = validar(body.conteudo);
     if (problema) return json({ erro: problema }, 400);
-    const conteudo = { ...body.conteudo, titulos: await titulos(body.conteudo) };
+    const { titulos: _antigos, ...conteudo } = body.conteudo;
     const { error } = await sb.from('pf_site').upsert({ id: 'principal', conteudo, atualizado_em: new Date().toISOString() });
     if (error) return json({ erro: 'Não consegui salvar. Tenta de novo em instantes.' }, 500);
     return json({ ok: true, conteudo });

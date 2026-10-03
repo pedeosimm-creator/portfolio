@@ -10,12 +10,11 @@ const slugify = (s) =>
 const ext = (url) => `href="${esc(url)}" target="_blank" rel="noopener"`;
 
 export function preparar(c) {
-  const titulos = c.titulos || {};
   return (c.projetos || []).map((p, i) => {
     const videos = (p.videos || []).filter(Boolean).map((url, k) => {
       const v = parseVideo(url);
       if (v.tipo === 'youtube') {
-        v.titulo = titulos[v.id] || `${v.vertical ? 'Vídeo' : 'Clipe'} ${pad(k + 1)}`;
+        v.titulo = `Vídeo ${pad(k + 1)}`;
         v.thumb = `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
       } else if (v.tipo === 'instagram') v.titulo = `${v.rotulo} ${pad(k + 1)}`;
       else v.titulo = `Link ${pad(k + 1)}`;

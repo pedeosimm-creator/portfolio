@@ -36,11 +36,10 @@ const titulo = `${site.nome} · Roteiro, filme e foto`;
   </svg>
 
   <header class="top wrap mono">
-    <span>Pedro Simm<br /><span class="dim">Roteiro / Filme / Foto</span></span>
+    <a class="brand" href="#">Pedro Simm<span class="sub dim">Roteiro / Filme / Foto</span></a>
     <nav class="mid" aria-label="Principal">
-      <a href="#projetos">Projetos</a><a href="#outros">Outros</a><a href="#kit">Kit</a><a href="#contato">Contato</a>
+      <a href="#projetos">Projetos</a><a href="#outros">Serviços</a><a href="#kit">Kit</a><a href="#contato">Contato</a>
     </nav>
-    <a class="end" href="#contato">Contato <span class="acc">■</span></a>
   </header>
 
   <main set:html={paginaHTML(site)} />

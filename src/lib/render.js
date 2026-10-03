@@ -42,17 +42,14 @@ function hero(c, projetos) {
     </div>
     <div class="hero-side">
       <div class="intro">
-        <h2>↘ Introdução</h2>
+        <div class="intro-top mono"><span class="acc">↘ Introdução</span><span class="rating" aria-label="Classificação: livre"><b>L</b>Livre pra todo mundo</span></div>
         <p>${esc(c.intro)}</p>
-        <span class="mono">Roteiro · Direção · Filmmaker · Fotografia</span>
+        <span class="mono dim">Roteiro · Direção · Filmmaker · Fotografia</span>
       </div>
-      <div class="hero-row">
-        <div class="rating" aria-label="Classificação: livre"><b>L</b><span class="mono">Livre<br>pra todo<br>mundo</span></div>
-        <div class="quick mono">
-          ${projetos.slice(0, 3).map((p) => `<a href="#p-${p.slug}" data-open="${p.slug}">${esc(p.titulo)} <span>${p.num} ↓</span></a>`).join('')}
-          <a href="#kit">Kit de set <span>↓</span></a>
-        </div>
-      </div>
+      <nav class="quick mono" aria-label="Atalhos">
+        ${projetos.slice(0, 3).map((p) => `<a href="#p-${p.slug}" data-open="${p.slug}"><span><i>${p.num}</i>${esc(p.titulo)}</span><span aria-hidden="true">↓</span></a>`).join('')}
+        <a href="#kit"><span><i>✱</i>Kit de set</span><span aria-hidden="true">↓</span></a>
+      </nav>
     </div>
   </section>`;
 }

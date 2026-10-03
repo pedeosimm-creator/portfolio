@@ -46,7 +46,7 @@ function hero(c, projetos) {
         <span class="mono dim">Roteiro · Direção · Filmmaker · Fotografia</span>
       </div>
       <nav class="quick mono" aria-label="Atalhos">
-        ${[['#projetos', 'Projetos selecionados'], ['#kit', 'Kit de set'], ['#galeria', 'Portfólio'], ['#contato', 'Contato']]
+        ${[['#projetos', 'Projetos selecionados'], ['#outros', 'Serviços'], ['#kit', 'Kit de set'], ['#galeria', 'Portfólio'], ['#contato', 'Contato']]
           .map(([href, nome], k) => `<a href="${href}"><span><i>${pad(k + 1)}</i>${nome}</span><span aria-hidden="true">↓</span></a>`).join('')}
       </nav>
     </div>

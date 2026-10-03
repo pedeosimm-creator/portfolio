@@ -47,8 +47,8 @@ function hero(c, projetos) {
         <span class="mono dim">Roteiro · Direção · Filmmaker · Fotografia</span>
       </div>
       <nav class="quick mono" aria-label="Atalhos">
-        ${projetos.slice(0, 3).map((p) => `<a href="#p-${p.slug}" data-open="${p.slug}"><span><i>${p.num}</i>${esc(p.titulo)}</span><span aria-hidden="true">↓</span></a>`).join('')}
-        <a href="#kit"><span><i>✱</i>Kit de set</span><span aria-hidden="true">↓</span></a>
+        ${[['#projetos', 'Projetos selecionados'], ['#kit', 'Kit de set'], ['#outros', 'Portfólio'], ['#contato', 'Contato']]
+          .map(([href, nome], k) => `<a href="${href}"><span><i>${pad(k + 1)}</i>${nome}</span><span aria-hidden="true">↓</span></a>`).join('')}
       </nav>
     </div>
   </section>`;

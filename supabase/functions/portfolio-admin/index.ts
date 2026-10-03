@@ -37,6 +37,7 @@ function validar(c: any): string | null {
     if (!Array.isArray(p.videos) || p.videos.some((v: unknown) => typeof v !== 'string')) return `Os vídeos do projeto "${p.titulo}" estão com problema.`;
   }
   if (!Array.isArray(c.servicos) || !Array.isArray(c.kit)) return 'Outros trabalhos e kit precisam ser listas.';
+  if (c.galeria !== undefined && (!Array.isArray(c.galeria) || c.galeria.some((v: unknown) => typeof v !== 'string'))) return 'A galeria está com problema.';
   if (JSON.stringify(c).length > 200_000) return 'Conteúdo grande demais.';
   return null;
 }

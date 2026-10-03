@@ -9,6 +9,9 @@ const slugify = (s) =>
   String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'projeto';
 const ext = (url) => `href="${esc(url)}" target="_blank" rel="noopener"`;
 
+// Triângulo de play desenhado (o caractere ▶ vira emoji no iPhone).
+export const PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>';
+
 export function preparar(c) {
   return (c.projetos || []).map((p, i) => {
     const videos = (p.videos || []).filter(Boolean).map((url, k) => {
@@ -22,11 +25,7 @@ export function preparar(c) {
     });
     // Palco largo se tiver ao menos um vídeo deitado do YouTube; só Shorts e Instagram usam o palco estreito.
     const horizontal = videos.some((v) => v.tipo === 'youtube' && !v.vertical);
-    const soClipes = videos.length > 0 && videos.every((v) => v.tipo === 'youtube' && !v.vertical);
-    const contagem = videos.length
-      ? `${pad(videos.length)} ${soClipes ? 'clipes' : 'vídeos'} · ${hostName(videos[0].url)}`
-      : p.perfil?.url ? hostName(p.perfil.url) : '';
-    return { ...p, slug: `${slugify(p.titulo)}-${i + 1}`, num: pad(i + 1), videos, horizontal, contagem };
+    return { ...p, slug: `${slugify(p.titulo)}-${i + 1}`, num: pad(i + 1), videos, horizontal };
   });
 }
 
@@ -47,7 +46,7 @@ function hero(c, projetos) {
         <span class="mono dim">Roteiro · Direção · Filmmaker · Fotografia</span>
       </div>
       <nav class="quick mono" aria-label="Atalhos">
-        ${[['#projetos', 'Projetos selecionados'], ['#kit', 'Kit de set'], ['#outros', 'Portfólio'], ['#contato', 'Contato']]
+        ${[['#projetos', 'Projetos selecionados'], ['#kit', 'Kit de set'], ['#galeria', 'Portfólio'], ['#contato', 'Contato']]
           .map(([href, nome], k) => `<a href="${href}"><span><i>${pad(k + 1)}</i>${nome}</span><span aria-hidden="true">↓</span></a>`).join('')}
       </nav>
     </div>
@@ -67,7 +66,7 @@ function projeto(p) {
         <div class="rail${lista ? ' list' : ''}" role="group" aria-label="Escolher vídeo">
           ${p.videos.map((v, k) => `<button data-pick data-tipo="${v.tipo}" data-id="${esc(v.id || '')}" data-url="${esc(v.url)}" data-titulo="${esc(v.titulo)}" data-vertical="${v.vertical || v.tipo === 'instagram' ? '1' : ''}" aria-pressed="${k === 0}" aria-label="${esc(v.titulo)}">${
             lista
-              ? `<span class="n">${pad(k + 1)}</span><span class="mono">${hostName(v.url)} ▸</span>`
+              ? `<span class="n">${pad(k + 1)}</span><span class="mono">${hostName(v.url)}</span>`
               : `${v.thumb ? `<img src="${v.thumb}" alt="" loading="lazy">` : ''}`
           }</button>`).join('')}
         </div>
@@ -83,7 +82,7 @@ function projeto(p) {
     <button class="row${p.principal ? ' main' : ''}${comThumb.length ? '' : ' bare'}" data-toggle="${p.slug}" aria-expanded="false" aria-controls="panel-${p.slug}">
       <span class="num">${p.num}</span>
       ${comThumb.length ? `<span class="thumbs">${comThumb.slice(0, 3).map((v) => `<img src="${v.thumb}" alt="" loading="lazy">`).join('')}</span>` : ''}
-      <span class="ttl"><b>${esc(p.titulo)}</b><span class="mono">${[p.papel, p.formato].filter(Boolean).map(esc).join(' · ')}<br>${esc(fotos.length && !p.videos.length ? `${pad(fotos.length)} fotos` : p.contagem)}</span></span>
+      <span class="ttl"><b>${esc(p.titulo)}</b><span class="mono">${[p.papel, p.formato].filter(Boolean).map(esc).join(' · ')}</span></span>
       <span class="arr" aria-hidden="true">+</span>
     </button>
     <div class="panel" id="panel-${p.slug}" hidden>
@@ -95,6 +94,34 @@ function projeto(p) {
       ${stage}
     </div>
   </article>`;
+}
+
+// Galeria: o resto dos trabalhos. Cada item é um link do YouTube/Instagram ou uma foto subida pelo painel.
+function galeriaHTML(c) {
+  const itens = (c.galeria || []).filter(Boolean).map((url) => {
+    const v = parseVideo(url);
+    if (v.tipo === 'youtube') return { cat: 'video', tipo: 'youtube', id: v.id, vertical: v.vertical, url: v.url, thumb: `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg` };
+    if (v.tipo === 'instagram') return { cat: 'video', tipo: 'instagram', url: v.url };
+    return { cat: 'foto', tipo: 'foto', url };
+  });
+  if (!itens.length) return '';
+  const nVideo = itens.filter((i) => i.cat === 'video').length;
+  const nFoto = itens.length - nVideo;
+  const filtros = nVideo && nFoto
+    ? `<div class="gal-filtros mono" role="group" aria-label="Filtrar galeria">${[['tudo', 'Tudo', itens.length], ['video', 'Vídeos', nVideo], ['foto', 'Fotos', nFoto]]
+        .map(([k, nome, n]) => `<button data-gfiltro="${k}" aria-pressed="${k === 'tudo'}">${nome} <b>${pad(n)}</b></button>`).join('')}</div>`
+    : '';
+  return `<section class="wrap sec" id="galeria">
+    <div class="sec-head"><h2>Galeria</h2></div>
+    ${filtros}
+    <div class="gal">${itens.map((it, k) => `<button class="g-item${it.vertical ? ' v' : ''}" data-g data-cat="${it.cat}" data-tipo="${it.tipo}" data-id="${esc(it.id || '')}" data-url="${esc(it.url)}" data-vertical="${it.vertical || it.tipo === 'instagram' ? '1' : ''}" aria-label="${it.cat === 'foto' ? 'Ampliar foto' : 'Tocar vídeo'} ${k + 1}">${
+      it.tipo === 'foto'
+        ? `<img src="${esc(it.url)}" alt="" loading="lazy">`
+        : it.thumb
+          ? `<img src="${it.thumb}" alt="" loading="lazy"><span class="g-play">${PLAY}</span>`
+          : `<span class="g-ig mono">Instagram</span><span class="g-play">${PLAY}</span>`
+    }</button>`).join('')}</div>
+  </section>`;
 }
 
 export function paginaHTML(c) {
@@ -109,6 +136,8 @@ export function paginaHTML(c) {
     <div class="sec-head"><h2>Projetos selecionados</h2><span class="hand">clica pra abrir ↓</span></div>
     <div class="rows">${projetos.map(projeto).join('')}</div>
   </section>
+
+  ${galeriaHTML(c)}
 
   <section class="wrap sec" id="outros">
     <div class="sec-head"><h2>O que mais faço</h2></div>

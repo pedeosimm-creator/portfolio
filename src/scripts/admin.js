@@ -91,22 +91,48 @@ function projeto(p, i, n) {
       <small class="dim">Reels: o jeito mais garantido é subir no YouTube como Shorts e colar o link aqui.</small>
       <h3 class="mono">Fotos <span class="dim">· aparecem em grade, clicando abre em tela cheia</span></h3>
       <div class="fotos">${(p.fotos || []).map((f, fi, arr) => `<div class="ft"><img src="${esc(f)}" alt="Foto ${fi + 1}" loading="lazy"><span class="ft-acts">${moveBtns(`${path}.fotos.${fi}`, fi, arr.length)}<button type="button" class="icon" data-act="del" data-path="${path}.fotos.${fi}" aria-label="Tirar foto ${fi + 1}">✕</button></span></div>`).join('') || '<p class="dim mono">Nenhuma foto ainda.</p>'}</div>
-      <label class="add mono up">+ Subir fotos<input type="file" accept="image/jpeg,image/png,image/webp" multiple data-upload="${i}"></label>
+      <label class="add mono up">+ Subir fotos<input type="file" accept="image/jpeg,image/png,image/webp" multiple data-upload="${path}.fotos" data-abre="${path}"></label>
       <div class="pfoot">${moveBtns(path, i, n)}${delBtn(path, 'Remover projeto')}</div>
     </div>
   </details>`;
+}
+
+const ehFoto = (url) => /\/storage\/v1\/object\/public\//.test(url);
+const ytThumb = (url) => {
+  const id = url.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/)?.[1];
+  return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : '';
+};
+function galeriaItem(url, gi, n) {
+  const path = `galeria.${gi}`;
+  const acoes = `<span class="ft-acts">${moveBtns(path, gi, n)}<button type="button" class="icon" data-act="del" data-path="${path}" aria-label="Tirar item ${gi + 1}">✕</button></span>`;
+  if (ehFoto(url)) return `<div class="g-row"><img src="${esc(url)}" alt="Foto ${gi + 1}" loading="lazy"><span class="mono dim">Foto ${pad(gi + 1)}</span>${acoes}</div>`;
+  const [nome, tipo] = plataforma(url);
+  const thumb = ytThumb(url);
+  return `<div class="g-row">${thumb ? `<img src="${thumb}" alt="" loading="lazy">` : '<span class="g-vazio mono">vídeo</span>'}
+    <span class="g-link"><input data-path="${path}" id="f-${path}" type="url" inputmode="url" value="${esc(url)}" placeholder="Cola o link do YouTube ou Instagram" aria-label="Link do item ${gi + 1}"><span class="tag ${tipo}" data-tag="${path}">${nome}</span></span>${acoes}</div>`;
 }
 
 function render() {
   const d = st.data;
   const servicos = d.servicos || [];
   const kit = d.kit || [];
+  const galeria = d.galeria || [];
   editor.innerHTML = `
     <section class="card">
       <h2>Projetos</h2>
       <p class="dim">Abre um projeto pra editar. Pra trocar um vídeo, apaga o link e cola o novo.</p>
       ${d.projetos.map((p, i) => projeto(p, i, d.projetos.length)).join('')}
       <button type="button" class="add mono" data-act="add" data-path="projetos" data-novo="projeto">+ Novo projeto</button>
+    </section>
+
+    <section class="card">
+      <h2>Galeria</h2>
+      <p class="dim">O resto dos trabalhos, em grade. Cola link do YouTube (ou Instagram) ou sobe fotos. A ordem aqui é a ordem no site.</p>
+      <div class="gal-adm">${galeria.map((item, gi) => galeriaItem(item, gi, galeria.length)).join('') || '<p class="dim mono">Galeria vazia: ela só aparece no site quando tiver algo.</p>'}</div>
+      <div class="gal-acts">
+        <button type="button" class="add mono" data-act="add" data-path="galeria" data-novo="video">+ Adicionar vídeo (link)</button>
+        <label class="add mono up">+ Subir fotos<input type="file" accept="image/jpeg,image/png,image/webp" multiple data-upload="galeria"></label>
+      </div>
     </section>
 
     <section class="card">
@@ -177,19 +203,19 @@ async function prepararFoto(file) {
 editor.addEventListener('change', async (e) => {
   const input = e.target.closest('[data-upload]');
   if (!input || !input.files.length) return;
-  const pi = Number(input.dataset.upload);
+  const destino = input.dataset.upload;
   const arquivos = [...input.files];
-  const projeto = st.data.projetos[pi];
-  projeto.fotos ||= [];
+  const lista = getPath(st.data, destino) || [];
+  setPath(st.data, destino, lista);
   $('#salvar').disabled = true;
   try {
     for (const [k, file] of arquivos.entries()) {
       statusEl.textContent = `Subindo foto ${k + 1} de ${arquivos.length}…`;
       statusEl.className = 'status mono';
       const r = await api('foto', { tipo: 'image/jpeg', base64: await prepararFoto(file) });
-      projeto.fotos.push(r.url);
+      lista.push(r.url);
     }
-    st.open.add(`projetos.${pi}`);
+    if (input.dataset.abre) st.open.add(input.dataset.abre);
     render();
     marcar('Fotos no ar. Clica em Salvar pra aparecerem no site.');
   } catch (err) {
@@ -295,6 +321,7 @@ function limpar(d) {
     if (p.perfil && !p.perfil.url && !p.perfil.texto) delete p.perfil;
   });
   c.servicos = (c.servicos || []).map((s) => s.trim()).filter(Boolean);
+  c.galeria = (c.galeria || []).map((v) => v.trim()).filter(Boolean);
   c.kit.forEach((k) => k.itens.forEach((it) => { if (it.qtd == null || it.qtd === '' || Number.isNaN(it.qtd)) delete it.qtd; }));
   return c;
 }
@@ -310,6 +337,8 @@ $('#salvar').addEventListener('click', async () => {
       const k = p.videos.findIndex((v) => plataforma(v)[1] !== 'ok');
       if (k >= 0) throw new Error(`O vídeo ${pad(k + 1)} de "${p.titulo}" não é link do YouTube nem do Instagram.`);
     }
+    const gk = conteudo.galeria.findIndex((v) => !ehFoto(v) && plataforma(v)[1] !== 'ok');
+    if (gk >= 0) throw new Error(`O item ${pad(gk + 1)} da galeria não é link do YouTube nem do Instagram.`);
     const r = await api('salvar', { conteudo });
     st.data = r.conteudo;
     st.dirty = false;

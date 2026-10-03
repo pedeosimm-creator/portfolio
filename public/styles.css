@@ -111,7 +111,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .feat .bar b{font-weight:800;text-transform:uppercase;font-size:15px;line-height:1.2}
 .feat .bar a{background:var(--acc);color:var(--black);padding:7px 12px;text-decoration:none;font-weight:700}
 .yt{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden}
-.yt.v{aspect-ratio:9/16}
+.yt.v{aspect-ratio:9/16;width:100%;max-width:340px;margin-inline:auto}
+.feat:has(.yt.v) .bar{width:100%;max-width:340px;margin-inline:auto}
 .yt img,.yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:cover}
 .pl{position:absolute;inset:0;display:grid;place-items:center}
 .pl span{width:64px;height:64px;border-radius:50%;border:2px solid var(--bone);display:grid;place-items:center;background:rgba(12,12,11,.5);font-size:20px;padding-left:4px;transition:transform .15s,background .15s}

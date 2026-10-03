@@ -15,15 +15,17 @@ export function preparar(c) {
     const videos = (p.videos || []).filter(Boolean).map((url, k) => {
       const v = parseVideo(url);
       if (v.tipo === 'youtube') {
-        v.titulo = titulos[v.id] || `Clipe ${pad(k + 1)}`;
+        v.titulo = titulos[v.id] || `${v.vertical ? 'Vídeo' : 'Clipe'} ${pad(k + 1)}`;
         v.thumb = `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
       } else if (v.tipo === 'instagram') v.titulo = `${v.rotulo} ${pad(k + 1)}`;
       else v.titulo = `Link ${pad(k + 1)}`;
       return v;
     });
-    const horizontal = videos.length > 0 && videos.every((v) => v.tipo === 'youtube' && !v.vertical);
+    // Palco largo se tiver ao menos um vídeo deitado do YouTube; só Shorts e Instagram usam o palco estreito.
+    const horizontal = videos.some((v) => v.tipo === 'youtube' && !v.vertical);
+    const soClipes = videos.length > 0 && videos.every((v) => v.tipo === 'youtube' && !v.vertical);
     const contagem = videos.length
-      ? `${pad(videos.length)} ${horizontal ? 'clipes' : 'vídeos'} · ${hostName(videos[0].url)}`
+      ? `${pad(videos.length)} ${soClipes ? 'clipes' : 'vídeos'} · ${hostName(videos[0].url)}`
       : p.perfil?.url ? hostName(p.perfil.url) : '';
     return { ...p, slug: `${slugify(p.titulo)}-${i + 1}`, num: pad(i + 1), videos, horizontal, contagem };
   });

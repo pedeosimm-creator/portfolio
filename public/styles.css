@@ -140,6 +140,19 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .rail.list button[aria-pressed="true"] .n,.rail.list button[aria-pressed="true"] b{color:var(--acc)}
 .album{display:grid;gap:10px;align-content:center;min-height:220px;border:1.5px solid var(--bone);padding:24px;text-decoration:none}
 .album:hover{background:var(--acc);border-color:var(--acc);color:var(--black)}
+.carrossel{display:grid;gap:12px;min-width:0}
+.carrossel.full{grid-column:1 / -1}
+.c-track{position:relative;display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+.c-track::-webkit-scrollbar{display:none}
+.c-track button{flex:0 0 auto;scroll-snap-align:start;height:clamp(300px,62vh,600px);max-width:88%;background:#000}
+.c-track img{height:100%;width:auto;max-width:100%;object-fit:cover;display:block;transition:opacity .15s}
+.c-track button:hover img{opacity:.88}
+.c-ctrl{display:flex;align-items:center;gap:14px;justify-content:flex-end}
+.c-ctrl button{width:44px;height:44px;border:1.5px solid var(--line);font-size:18px;color:var(--bone)}
+.c-ctrl button:hover{border-color:var(--acc);color:var(--acc)}
+.c-n{color:var(--grey);font-variant-numeric:tabular-nums}
+.c-n b{color:var(--bone);font-weight:700}
+@media (max-width:560px){.c-track button{height:min(58vh,480px)}}
 .photos{columns:3 200px;column-gap:8px}
 .photos.full{grid-column:1 / -1}
 .photos button{display:block;width:100%;margin:0 0 8px;break-inside:avoid}

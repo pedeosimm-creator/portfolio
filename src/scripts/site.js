@@ -85,6 +85,8 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.addEventListener('click', (e) => {
+  const seta = e.target.closest('[data-c]');
+  if (seta) return andar(seta.closest('.carrossel'), Number(seta.dataset.c));
   const foto = e.target.closest('[data-foto]');
   if (foto) {
     const itens = [...foto.parentElement.querySelectorAll('img')].map((i) => ({ tipo: 'foto', url: i.src }));
@@ -113,19 +115,43 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// Carrossel de fotos: setas andam uma foto; o contador acompanha a rolagem (inclusive arrastando no celular).
+function atual(track) {
+  const slides = [...track.children];
+  const i = slides.findIndex((el) => el.offsetLeft + el.offsetWidth / 2 > track.scrollLeft + 1);
+  return Math.max(0, i);
+}
+function andar(car, d) {
+  const track = car.querySelector('.c-track');
+  const slides = [...track.children];
+  const alvo = slides[Math.min(slides.length - 1, Math.max(0, atual(track) + d))];
+  track.scrollTo({ left: alvo.offsetLeft, behavior: reduced ? 'auto' : 'smooth' });
+}
+document.addEventListener('scroll', (e) => {
+  const track = e.target.closest?.('.c-track');
+  if (!track) return;
+  const n = track.parentElement.querySelector('.c-n b');
+  if (n) n.textContent = String(atual(track) + 1).padStart(2, '0');
+}, true);
+
+// Arrastar com o dedo na tela cheia.
+let toqueX = null;
+document.addEventListener('touchstart', (e) => { if (lb && !lb.hidden && e.target.closest('.lb-m img')) toqueX = e.touches[0].clientX; }, { passive: true });
+document.addEventListener('touchend', (e) => {
+  if (toqueX === null) return;
+  const dx = e.changedTouches[0].clientX - toqueX;
+  toqueX = null;
+  if (Math.abs(dx) > 50) passo(dx < 0 ? 1 : -1);
+});
+
 // Sem galeria, os links para ela somem.
 function ajustarLinks() {
   const tem = !!document.getElementById('galeria');
   document.querySelectorAll('a[href="#galeria"]').forEach((a) => (a.hidden = !tem));
 }
 
-function abrirPrincipal() {
-  const main = document.querySelector('.row.main') || document.querySelector('.row');
-  if (main) toggle(main.dataset.toggle, true);
-}
-
+// Nenhum projeto abre sozinho: todos começam fechados.
 ajustarLinks();
-abrirPrincipal();
 
 // Versão mais nova salva pelo painel.
 const inicial = document.getElementById('conteudo-inicial')?.textContent || '';
@@ -137,6 +163,5 @@ buscarConteudo()
     if (c.cor) document.documentElement.style.setProperty('--acc', c.cor);
     ajustarLinks();
     if (aberto && document.querySelector(`[data-toggle="${aberto}"]`)) toggle(aberto, true);
-    else abrirPrincipal();
   })
   .catch(() => {});

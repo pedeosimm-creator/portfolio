@@ -1,9 +1,10 @@
 // Painel de edição: lê o conteúdo da Supabase, edita por formulário e salva pela função portfolio-admin (com senha).
+import Sortable from 'sortablejs';
 import { buscarConteudo, PAINEL_URL, SUPABASE_KEY } from '../lib/config.js';
 
 const ICONES = ['camera', 'action', 'zoom', 'fish', 'shotgun', 'lav', 'tube', 'torch', 'panel', 'lantern', 'tripod', 'arm', 'gimbal', 'battery', 'charger'];
 const NOVO = {
-  projeto: () => ({ titulo: 'Novo projeto', papel: '', cliente: '', formato: '', ano: '', texto: '', videos: [] }),
+  projeto: () => ({ titulo: 'Novo projeto', papel: '', cliente: '', ano: '', texto: '', videos: [] }),
   video: () => '',
   servico: () => '',
   categoria: () => ({ categoria: 'Nova categoria', itens: [] }),
@@ -72,15 +73,13 @@ function projeto(p, i, n) {
   const path = `projetos.${i}`;
   const vids = p.videos || [];
   return `<details class="proj" data-key="${path}"${st.open.has(path) ? ' open' : ''}>
-    <summary><span class="pnum">${pad(i + 1)}</span><b>${esc(p.titulo || 'Sem título')}</b>${p.principal ? '<span class="tag ok">abre primeiro</span>' : ''}<span class="mono dim">${vids.length} vídeo${vids.length === 1 ? '' : 's'} · ${(p.fotos || []).length} foto${(p.fotos || []).length === 1 ? '' : 's'}</span></summary>
+    <summary><span class="pnum">${pad(i + 1)}</span><b>${esc(p.titulo || 'Sem título')}</b><span class="mono dim">${vids.length} vídeo${vids.length === 1 ? '' : 's'} · ${(p.fotos || []).length} foto${(p.fotos || []).length === 1 ? '' : 's'}</span></summary>
     <div class="pbody">
       <div class="grid">
         ${field('Título', `${path}.titulo`)}
         ${field('Papel', `${path}.papel`)}
         ${field('Cliente', `${path}.cliente`)}
-        ${field('Formato', `${path}.formato`)}
         ${field('Ano', `${path}.ano`, { placeholder: 'ex.: 2025' })}
-        <label class="field check"><input type="checkbox" data-act="principal" data-path="${path}"${p.principal ? ' checked' : ''}><span>Projeto principal (abre primeiro no site)</span></label>
         ${field('Texto', `${path}.texto`, { textarea: true, wide: true })}
         ${field('Botão do perfil: texto', `${path}.perfil.texto`, { placeholder: 'ex.: @concept.qg no Instagram' })}
         ${field('Botão do perfil: link', `${path}.perfil.url`, { placeholder: 'https://…' })}
@@ -89,8 +88,9 @@ function projeto(p, i, n) {
       <div class="videos">${vids.map((_, vi) => videoRow(i, vi, vids.length)).join('') || '<p class="dim mono">Nenhum vídeo ainda.</p>'}</div>
       <button type="button" class="add mono" data-act="add" data-path="${path}.videos" data-novo="video">+ Adicionar vídeo</button>
       <small class="dim">Reels: o jeito mais garantido é subir no YouTube como Shorts e colar o link aqui.</small>
-      <h3 class="mono">Fotos <span class="dim">· aparecem em grade, clicando abre em tela cheia</span></h3>
-      <div class="fotos">${(p.fotos || []).map((f, fi, arr) => `<div class="ft"><img src="${esc(f)}" alt="Foto ${fi + 1}" loading="lazy"><span class="ft-acts">${moveBtns(`${path}.fotos.${fi}`, fi, arr.length)}<button type="button" class="icon" data-act="del" data-path="${path}.fotos.${fi}" aria-label="Tirar foto ${fi + 1}">✕</button></span></div>`).join('') || '<p class="dim mono">Nenhuma foto ainda.</p>'}</div>
+      <h3 class="mono">Fotos <span class="dim">· aparecem em carrossel; clicando abre em tela cheia</span></h3>
+      ${(p.fotos || []).length > 1 ? `<div class="ordem mono"><span class="dim">Arrasta as fotos pra mudar a ordem</span><button type="button" class="add mono" data-act="inverter" data-path="${path}.fotos">⇅ Inverter ordem</button></div>` : ''}
+      <div class="fotos" data-lista="${path}.fotos">${(p.fotos || []).map((f, fi, arr) => `<div class="ft"><img src="${esc(f)}" alt="Foto ${fi + 1}" loading="lazy"><span class="ft-acts">${moveBtns(`${path}.fotos.${fi}`, fi, arr.length)}<button type="button" class="icon" data-act="del" data-path="${path}.fotos.${fi}" aria-label="Tirar foto ${fi + 1}">✕</button></span></div>`).join('') || '<p class="dim mono">Nenhuma foto ainda.</p>'}</div>
       <label class="add mono up">+ Subir fotos<input type="file" accept="image/jpeg,image/png,image/webp" multiple data-upload="${path}.fotos" data-abre="${path}"></label>
       <div class="pfoot">${moveBtns(path, i, n)}${delBtn(path, 'Remover projeto')}</div>
     </div>
@@ -105,11 +105,35 @@ const ytThumb = (url) => {
 function galeriaItem(url, gi, n) {
   const path = `galeria.${gi}`;
   const acoes = `<span class="ft-acts">${moveBtns(path, gi, n)}<button type="button" class="icon" data-act="del" data-path="${path}" aria-label="Tirar item ${gi + 1}">✕</button></span>`;
-  if (ehFoto(url)) return `<div class="g-row"><img src="${esc(url)}" alt="Foto ${gi + 1}" loading="lazy"><span class="mono dim">Foto ${pad(gi + 1)}</span>${acoes}</div>`;
+  if (ehFoto(url)) return `<div class="g-row"><span class="pega" aria-hidden="true">⠿</span><img src="${esc(url)}" alt="Foto ${gi + 1}" loading="lazy"><span class="mono dim">Foto ${pad(gi + 1)}</span>${acoes}</div>`;
   const [nome, tipo] = plataforma(url);
   const thumb = ytThumb(url);
-  return `<div class="g-row">${thumb ? `<img src="${thumb}" alt="" loading="lazy">` : '<span class="g-vazio mono">vídeo</span>'}
+  return `<div class="g-row"><span class="pega" aria-hidden="true">⠿</span>${thumb ? `<img src="${thumb}" alt="" loading="lazy">` : '<span class="g-vazio mono">vídeo</span>'}
     <span class="g-link"><input data-path="${path}" id="f-${path}" type="url" inputmode="url" value="${esc(url)}" placeholder="Cola o link do YouTube ou Instagram" aria-label="Link do item ${gi + 1}"><span class="tag ${tipo}" data-tag="${path}">${nome}</span></span>${acoes}</div>`;
+}
+
+// Arrastar para ordenar (funciona no dedo também: segura um instante e arrasta).
+function ativarArrastar() {
+  editor.querySelectorAll('[data-lista]').forEach((el) => {
+    Sortable.create(el, {
+      animation: 150,
+      forceFallback: true,
+      fallbackTolerance: 4,
+      delay: 180,
+      delayOnTouchOnly: true,
+      handle: el.classList.contains('gal-adm') ? '.pega' : undefined,
+      filter: 'input, button',
+      preventOnFilter: false,
+      ghostClass: 'arrastando',
+      onEnd: ({ oldIndex, newIndex }) => {
+        if (oldIndex === newIndex) return;
+        const lista = getPath(st.data, el.dataset.lista);
+        lista.splice(newIndex, 0, lista.splice(oldIndex, 1)[0]);
+        marcar();
+        render();
+      },
+    });
+  });
 }
 
 function render() {
@@ -128,7 +152,8 @@ function render() {
     <section class="card">
       <h2>Galeria</h2>
       <p class="dim">O resto dos trabalhos, em grade. Cola link do YouTube (ou Instagram) ou sobe fotos. A ordem aqui é a ordem no site.</p>
-      <div class="gal-adm">${galeria.map((item, gi) => galeriaItem(item, gi, galeria.length)).join('') || '<p class="dim mono">Galeria vazia: ela só aparece no site quando tiver algo.</p>'}</div>
+      ${galeria.length > 1 ? `<div class="ordem mono"><span class="dim">Arrasta pelo ⠿ pra mudar a ordem</span><button type="button" class="add mono" data-act="inverter" data-path="galeria">⇅ Inverter ordem</button></div>` : ''}
+      <div class="gal-adm" data-lista="galeria">${galeria.map((item, gi) => galeriaItem(item, gi, galeria.length)).join('') || '<p class="dim mono">Galeria vazia: ela só aparece no site quando tiver algo.</p>'}</div>
       <div class="gal-acts">
         <button type="button" class="add mono" data-act="add" data-path="galeria" data-novo="video">+ Adicionar vídeo (link)</button>
         <label class="add mono up">+ Subir fotos<input type="file" accept="image/jpeg,image/png,image/webp" multiple data-upload="galeria"></label>
@@ -179,6 +204,7 @@ function render() {
         ${field('Instagram (sem @)', 'contato.instagram')}
       </div>
     </section>`;
+  ativarArrastar();
 }
 
 /* ---------- edição ---------- */
@@ -255,12 +281,8 @@ editor.addEventListener('click', (e) => {
   const { act, path } = b.dataset;
   const keys = path.split('.');
 
-  if (act === 'principal') {
-    const idx = Number(keys[1]);
-    st.data.projetos.forEach((p, i) => {
-      if (i === idx && b.checked) p.principal = true;
-      else delete p.principal;
-    });
+  if (act === 'inverter') {
+    getPath(st.data, path).reverse();
     marcar();
     render();
     return;
@@ -319,6 +341,8 @@ function limpar(d) {
   c.projetos.forEach((p) => {
     p.videos = (p.videos || []).map((v) => v.trim()).filter(Boolean);
     if (p.perfil && !p.perfil.url && !p.perfil.texto) delete p.perfil;
+    delete p.formato;
+    delete p.principal;
   });
   c.servicos = (c.servicos || []).map((s) => s.trim()).filter(Boolean);
   c.galeria = (c.galeria || []).map((v) => v.trim()).filter(Boolean);

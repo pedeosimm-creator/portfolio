@@ -56,9 +56,13 @@ function hero(c, projetos) {
 function projeto(p) {
   const fotos = (p.fotos || []).filter(Boolean);
   const comThumb = p.videos.filter((v) => v.thumb);
-  const meta = [['Papel', p.papel], ['Cliente', p.cliente], ['Formato', p.formato], ['Ano', p.ano]].filter(([, v]) => v);
+  const meta = [['Papel', p.papel], ['Cliente', p.cliente], ['Ano', p.ano]].filter(([, v]) => v);
+  // Fotos em carrossel: passa de lado (arrastando ou pelas setas) e abre em tela cheia ao clicar.
   const fotosHTML = (extra) =>
-    `<div class="photos${extra}">${fotos.map((f, k) => `<button data-foto="${k}" aria-label="Ampliar foto ${k + 1}"><img src="${esc(f)}" alt="" loading="lazy"></button>`).join('')}</div>`;
+    `<div class="carrossel${extra}">
+      <div class="c-track">${fotos.map((f, k) => `<button data-foto="${k}" aria-label="Ampliar foto ${k + 1}"><img src="${esc(f)}" alt="" loading="${k < 3 ? 'eager' : 'lazy'}"></button>`).join('')}</div>
+      ${fotos.length > 1 ? `<div class="c-ctrl mono"><button data-c="-1" aria-label="Foto anterior">←</button><span class="c-n"><b>01</b> / ${pad(fotos.length)}</span><button data-c="1" aria-label="Próxima foto">→</button></div>` : ''}
+    </div>`;
   const lista = p.videos.length > 0 && !p.videos.some((v) => v.thumb);
   const stage = p.videos.length
     ? `<div class="stage${p.horizontal ? '' : ' v'}">
@@ -79,10 +83,10 @@ function projeto(p) {
             : ''
       }</div>`;
   return `<article class="proj" id="p-${p.slug}">
-    <button class="row${p.principal ? ' main' : ''}${comThumb.length ? '' : ' bare'}" data-toggle="${p.slug}" aria-expanded="false" aria-controls="panel-${p.slug}">
+    <button class="row${comThumb.length ? '' : ' bare'}" data-toggle="${p.slug}" aria-expanded="false" aria-controls="panel-${p.slug}">
       <span class="num">${p.num}</span>
       ${comThumb.length ? `<span class="thumbs">${comThumb.slice(0, 3).map((v) => `<img src="${v.thumb}" alt="" loading="lazy">`).join('')}</span>` : ''}
-      <span class="ttl"><b>${esc(p.titulo)}</b><span class="mono">${[p.papel, p.formato].filter(Boolean).map(esc).join(' · ')}</span></span>
+      <span class="ttl"><b>${esc(p.titulo)}</b>${p.papel ? `<span class="mono">${esc(p.papel)}</span>` : ''}</span>
       <span class="arr" aria-hidden="true">+</span>
     </button>
     <div class="panel" id="panel-${p.slug}" hidden>
